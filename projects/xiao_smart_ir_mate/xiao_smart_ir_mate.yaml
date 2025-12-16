@@ -5,19 +5,19 @@
 
 
 substitutions:
-  name: "xiao-smart-ir-mate"
-  friendly_name: "XIAO Smart IR Mate"
+  name: "smart-ir-mate"
+  friendly_name: " Smart IR Mate"
 
 esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
   name_add_mac_suffix: True
   project:
-    name: "xiao.smart-ir-mate"
+    name: "smart-ir-mate"
     version: "2.0"
 
-esp32:
-  board: seeed_xiao_esp32c3
+esp8266:
+  board: nodemcuv2
   framework:
     type: arduino
 
@@ -101,13 +101,13 @@ Flash_comp:
 
 remote_transmitter:
   id: my_transmitter
-  pin: GPIO3
+  pin: D6
   carrier_duty_percent: 50%
 
 remote_receiver:
   - id: rcvr
     pin:
-      number: GPIO4
+      number: D5
       inverted: true
     # Idle time, if the low level exceeds this time, it is considered as a new segment of the signal
     # That is "segmentation"
@@ -213,21 +213,12 @@ switch:
     name: "Is Learned Signal?"
     optimistic: true
 
-light:
-  - platform: esp32_rmt_led_strip
-    rgb_order: GRB
-    pin: GPIO7 # D5
-    num_leds: 1
-    chipset: WS2812
-    name: "WIFI RGB Light"
-    id: rgb_light
-    rmt_symbols: 48
 
 binary_sensor:
   - platform: gpio
     id: touch_pad
     pin:
-      number: GPIO5 # D3
+      number: D3 # D3
       mode: INPUT_PULLDOWN
     on_state:
       then:
@@ -243,7 +234,7 @@ binary_sensor:
   - platform: gpio
     id: reset_button
     pin:
-      number: GPIO9 # D9
+      number: D9 # D9
       mode: INPUT_PULLUP
     filters:
       invert
@@ -274,7 +265,7 @@ binary_sensor:
 output:
   - platform: gpio
     id: vibration_output
-    pin: GPIO6 # D4
+    pin: D4 # D4
 
 script:
   - id: vibe
@@ -316,24 +307,4 @@ script:
             id(is_learned_signal_switch).turn_on();
           } else {
             id(is_learned_signal_switch).turn_off();
-          }
-
-interval:
-  - id: blink_rgb
-    interval: 500ms
-    then:
-      - lambda: |-
-          if (!id(is_wifi_connected)) {
-            static int state = 0;
-            if (state == 1) {
-              auto call = id(rgb_light).turn_on();
-              call.set_rgb(1.0, 1.0, 1.0);
-              call.set_transition_length(0);
-              call.perform();
-            } else {
-              auto call = id(rgb_light).turn_off();
-              call.set_transition_length(0);
-              call.perform();
-            }
-            state = !state;
           }
